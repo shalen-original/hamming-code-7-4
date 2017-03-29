@@ -32,7 +32,6 @@ public class Hamming
 		int currPos = 0;
 
 		String converted = sb.toString(); // Converted contains the message represented as a string of 0s and 1s
-		//List<Byte> outL = new ArrayList<>(converted.length() / 4);	
 		OutputStream out = new BufferedOutputStream(new FileOutputStream(filename, false));
 		
 		int curr; 
@@ -145,7 +144,7 @@ public class Hamming
 	
 	
 	
-	
+	// For the explanation of the following methods, look at README.md
 	
 	private static int getBit(int source, int pos)
 	{
