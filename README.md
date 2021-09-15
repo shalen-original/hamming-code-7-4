@@ -1,0 +1,21 @@
+# Hamming codes assignment
+Work by Matteo Nardini for the Distributed System course.
+
+## Assignment details
+The assignment details are reported in the `assignment-paper.pdf` file.
+
+## Explanation of the solution
+The program saves the encoded output as a binary file and most operations are done at bit level. Before describing how the main two methods work, I will describe how the utilities methods operate.  
+In the program, the right-most bit of a byte has position zero while the left-most bit has position seven. Moreover, the left-most bit of each byte is not used, since the encoding uses only seven bits. As a last note, the program uses integers instead of bytes. This is because all the binary operators in Java work with integers. However, only the right-most eight bits of each integer are used. 
+
+### Utility methods:
+They are the following:
+
+* `getBit(int source, int pos)`: This method returns a number greater than zero if the `pos`-th bit of the source is one, zero otherwise. This is achieved by creating a binary mask with a one in the `pos`-th position and all zeros in the other positions (`1<<pos`). Then a binary `and` is performed between this mask and the source byte: in this way, if the `pos`-th bit of the source is one, also the output of the binary `and` will contain a one at position `pos`-th. If instead the `pos`-th bit of the source is a zero, the output of the and will contain only zeros. 
+* `setBit(int source, int value, int pos)`: If `value` is one, this method sets the `pos`-th bit of source to one. If `value` is zero, this method sets the `pos`-th bit of source to zero. The method again uses a binary mask (`1<<pos`) and a binary `or` to set the `pos`-th bit to one. An inverted binary mask (`~(1<<pos)`), that is, a binary mask with all ones and a zero at the `pos`-th position, is used in combination with a binary `and` to set the `pos`-th bit to zero.
+* `flipBit(int source, int pos)`: This method flips the `pos`-th bit of source. This is done again with the binary mask `1<<pos`, this time in combination with a binary `exclusive or`. Thanks to [Stackoverflow](http://stackoverflow.com/questions/18247126/how-to-flip-a-bit-at-a-specific-position-in-an-integer-in-any-language) for providing a more concise solution with respect to using both `getBit` and `setBit`.
+* `int xorAtPos(int source, int...positions)`: This method computes an `exclusive or` between the bits of source that are in the position specified in `positions`. This method operates by creating an intermediary result byte which has all zeros. For each position in `positions`, the `pos`-th bit is extracted in a way similar to how the `getBit` method operates. This extracted bit is then `or`-ed with the intermediary result. At this point, the intermediary result contains all the bit of source whose position is in `positions`. Then, the number of ones in the intermediary result is computed (`Integer.bitCount`). If the number of ones is even, then zero is returned. Otherwise, one is returned.
+ 
+### Main methods
+The `encode` method works by first translating the message to a string containing only zeros and ones using the method `Integer.toBinaryString`. Then, for each four characters of the string a byte is created. The leftmost bit is set to one and is not used in the encoding, all the other bits are set to zero. For each character of the string, if it is one then the corresponding bit of the current byte is set to one. After that, the three parity bits are computed by using the `xorAtPos` method. The result is then written to the output file.
+The `decode` method reads every byte from the file and, for each of them, computes again the parity bits. Then it checks if there are differences between the computed ones and the read ones. If there are, the error position is computed and that bit is corrected by flipping it. This correction is applied only if the error is in the data bit: if the error is in the parity bit it is simply ignored.  The so-corrected data bits are the appended to a string as a zero or one character. This string is then split in eight-character chunks, every block is converted back to a char with the `Character.toChars` method and is added to the decoded string. 
